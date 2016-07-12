@@ -2,24 +2,8 @@ var diameter = 960,
     radius = diameter / 2,
     innerRadius = radius - 120;
 
-var cluster = d3.layout.cluster()
-    .size([360, innerRadius])
-    .sort(null)
-    .value(function(d) { return d.size; });
 
-var bundle = d3.layout.bundle();
-
-var line = d3.svg.line.radial()
-    .interpolate("bundle")
-    .tension(.85)
-    .radius(function(d) { return d.y; })
-    .angle(function(d) { return d.x / 180 * Math.PI; });
-
-var link = svg.append("g").selectAll(".link"),
-    node = svg.append("g").selectAll(".node");
-
-
-function(draw) {
+function draw (data) {
 
   var svg = d3.select("body").append("svg")
     .attr("width", diameter)
@@ -39,7 +23,28 @@ function(draw) {
 
 
 
- 	var teams = filterTeams(data)
+ 	var nodes = filterTeams(data)
+  circleLayout(nodes)
+  
+  function circleLayout(nodes) {
+
+      // use to scale node index to theta value
+      var scale = d3.scale.linear()
+        .domain([0, nodes.length])
+        .range([0, 2 * Math.PI]);
+
+      // calculate theta for each node
+      nodes.forEach(function(d, i) {
+        // calculate polar coordinates
+        var theta = scale(i);
+        var radial = innerRadius;
+
+        // convert to cartesian coordinates
+        d.x = radial * Math.sin(theta);
+        d.y = radial * Math.cos(theta);
+      });
+
+    }
 
  	function filterTeams (data){
 
