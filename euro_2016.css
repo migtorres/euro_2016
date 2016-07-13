@@ -29,16 +29,20 @@
   fill: #d62728;
 }
 
-.link--source,
-.link--target {
+.link--win,
+.link--loss {
   stroke-opacity: 1;
   stroke-width: 2px;
 }
 
-.link--source {
+.link--win {
   stroke: #d62728;
 }
 
-.link--target {
+.link--loss {
   stroke: #2ca02c;
+}
+
+.link--draw {
+  stroke: #FFA500;
 }
