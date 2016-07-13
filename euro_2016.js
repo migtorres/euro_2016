@@ -56,9 +56,11 @@ function draw (data) {
       //     .attr("class", "outline")
       //     .attr("r", radius - margin);
 
- 	var nodes = filterTeams(data)
-  	circleLayout(nodes)
-  	drawNodes(nodes);
+ 	var nodes = filterTeams(data);
+  circleLayout(nodes);
+  var links = createLinks(nodes);
+  drawCurves(links)
+  drawNodes(nodes);
   
   function circleLayout(nodes) {
 
@@ -106,6 +108,34 @@ function draw (data) {
         });
     }
 
+  function drawCurves(links) {
+      // remember this from tree example?
+
+      d3.select("#plot").selectAll(".link")
+        .data(links)
+        .enter()
+        .append("path")
+        .attr("class", "link")
+        .attr("d", function(d){
+          var lineData = [
+          {
+            x: Math.round(d.target.x),
+            y: Math.round(d.target.y)
+          }, {
+          x: Math.round(d.target.x) - Math.round(d.target.x)/3,
+            y: Math.round(d.target.y) - Math.round(d.target.y)/3
+          }, 
+          {
+          x: Math.round(d.source.x) - Math.round(d.source.x)/3,
+            y: Math.round(d.source.y) - Math.round(d.source.y)/3
+          },{
+            x: Math.round(d.source.x),
+            y: Math.round(d.source.y)
+          }];
+          return `M${lineData[0].x},${lineData[0].y}C${lineData[1].x},${lineData[1].y},${lineData[2].x},${lineData[2].y},${lineData[3].x},${lineData[3].y} `;
+        });
+    }
+
  	function filterTeams (data){
 
   team_list = []
@@ -115,7 +145,7 @@ function draw (data) {
       })[0];
 
       if (!team) {
-      	team_list.push({name: name, matches: [{data}]})
+      	team_list.push({name: name, matches: [data]})
       }
       else {
       	team.matches.push(data)
@@ -129,6 +159,47 @@ function draw (data) {
 
   return team_list;
   }
+
+  function createLinks(nodes){
+    links = []
+    nodes.forEach(function(d){
+      d.matches.forEach(function(m){
+        var match = {};
+        if (m.status = "FINISHED") {
+          match.source = {
+            name: d.name,
+            x: d.x,
+            y: d.y,
+            goals: m.result.goalsHomeTeam,
+            htGoals: m.result.halfTime.goalsHomeTeam,
+            link: m._links.homeTeam.href
+          };
+          awayCoords = findCoords(nodes, m.awayTeamName)
+          match.target = {
+            name: m.awayTeamName,
+            x: awayCoords.x,
+            y: awayCoords.y,
+            goals: m.result.goalsAwayTeam,
+            htGoals: m.result.halfTime.goalsAwayTeam,
+            link: m._links.awayTeam.href
+          };
+          match.value = m.result.goalsHomeTeam + m.result.goalsAwayTeam
+          match.date = m.date
+          links.push(match)
+        }
+      });
+    });
+    return links
+  }
+
+  function findCoords(nodes, name){
+    var country = nodes.filter(function (obj) {
+      return obj.name === name;
+    })[0];
+    return {x: country.x, y: country.y}
+  }
+
+  
 
 
 
