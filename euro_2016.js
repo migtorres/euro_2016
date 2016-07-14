@@ -221,5 +221,5 @@ function draw (data) {
   }
  }
 
- d3.json("http://localhost:8000/fixtures.json", draw)
+ d3.json("https://migtorres.github.io/euro_2016/fixtures.json", draw)
 
