@@ -30,7 +30,8 @@
 }
 
 .link--win,
-.link--loss {
+.link--loss,
+.link--draw {
   stroke-opacity: 1;
   stroke-width: 2px;
 }

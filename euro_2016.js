@@ -1,6 +1,6 @@
-var diameter = 500;
+var diameter = 600;
 var radius = diameter / 2;
-var margin = 20;
+var margin = 80;
 
 
 function addTooltip(circle) {
@@ -65,21 +65,16 @@ function draw (data) {
   node = node
     .data(nodes)
     .enter()
-    .append("circle")
-    .attr("class", "node")
-    .attr("id", function(d, i) {
-      return d.name;
-    })
-    .attr("cx", function(d, i) {
-      return d.x;
-    })
-    .attr("cy", function(d, i) {
-      return d.y;
-    })
-    .attr("r", 5)
-    .style("fill", "#black")
+    .append("text")
+      .attr("class", "node")
+      .attr("dx", function(d) { return d.x > 0 ? d.x + 5 : d.x-5 })
+      .attr("dy", function(d) { return d.y })
+      .text(function(d) { return d.name })
+      .style("text-anchor", function(d) { return d.x > 0 ? "start" : "end"; })
+      .text(function(d) { return d.name; })
     .on("mouseover", mouseovered)
-    .on("mouseout", mouseouted);
+    .on("mouseout", mouseouted)
+    
 
   link = link.data(links)
     .enter()
@@ -194,15 +189,15 @@ function draw (data) {
   
     link
     .classed("link--win", function(l) {
-      if ((l.target.name === d.name && l.target.goals > l.source.goals) || (l.source.name === d.name && l.target.goals < l.source.goals))
-       return true; 
-    })
-    .classed("link--loss", function(l) { 
       if ((l.target.name === d.name && l.target.goals < l.source.goals) || (l.source.name === d.name && l.target.goals > l.source.goals))
        return true; 
     })
+    .classed("link--loss", function(l) { 
+      if ((l.target.name === d.name && l.target.goals > l.source.goals) || (l.source.name === d.name && l.target.goals < l.source.goals))
+       return true; 
+    })
     .classed("link--draw", function(l) { 
-      if (( l.target.name === d.name || l.source.name === d.name && l.target.goals == l.source.goals))
+      if (( l.target.name === d.name || l.source.name === d.name ) && l.target.goals == l.source.goals)
        return true; 
     })
     //.filter(function(l) { return l.target.name === d.name || l.source.name === d.name })
@@ -223,7 +218,6 @@ function draw (data) {
     node
     .classed("node--target", false)
     .classed("node--source", false)
-    .each(function(d, i) {d3.select("#tooltip").remove();})
   }
  }
 
