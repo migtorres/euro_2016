@@ -72,8 +72,9 @@ function draw (data) {
       .text(function(d) { return d.name })
       .style("text-anchor", function(d) { return d.x > 0 ? "start" : "end"; })
       .text(function(d) { return d.name; })
-    .on("mouseover", mouseovered)
-    .on("mouseout", mouseouted)
+    .on("mouseover", mouseover)
+    .on("mouseout", mouseout)
+    .on("click", mouse_clicked)
     
 
   link = link.data(links)
@@ -184,8 +185,27 @@ function draw (data) {
     }
   }
 
+  function mouse_clicked(d){
+  	if (typeof d.active == 'undefined' || d.active == false)
+  		{d.active = true;
+  		 add_colours(d);}
+  		
+  	else
+  		{d.active = false;
+  		remove_colours(d);}
+  }
 
-  function mouseovered(d) {
+  function mouseover(d){
+  	if (typeof d.active == 'undefined' || d.active == false)
+  		{add_colours(d);}
+  }
+
+  function mouseout(d){
+  	if (typeof d.active == 'undefined' || d.active == false)
+  		{remove_colours(d);}
+  }
+
+  function add_colours(d) {
   
     link
     .classed("link--win", function(l) {
@@ -204,11 +224,11 @@ function draw (data) {
     //.each(function() { this.parentNode.appendChild(this);});
   
     node
-    .classed("node--target", function(n) { return n.target; })
-    .classed("node--source", function(n) { return n.source; });
+    .classed("node--source", function(n) { 
+    	if (d.name == n.name) return true; });
   }
   
-  function mouseouted(d) {
+  function remove_colours(d) {
     link
     .classed("link--win", false)
     .classed("link--loss", false)
@@ -219,6 +239,7 @@ function draw (data) {
     .classed("node--target", false)
     .classed("node--source", false)
   }
+
  }
 
  d3.json("https://migtorres.github.io/euro_2016/fixtures.json", draw)

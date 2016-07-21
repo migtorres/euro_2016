@@ -18,16 +18,10 @@
 .node:hover,
 .node--source,
 .node--target {
+  fill: #000;
   font-weight: 700;
 }
 
-.node--source {
-  fill: #2ca02c;
-}
-
-.node--target {
-  fill: #d62728;
-}
 
 .link--win,
 .link--loss,
