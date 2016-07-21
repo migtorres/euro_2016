@@ -224,8 +224,8 @@ function draw (data) {
     //.each(function() { this.parentNode.appendChild(this);});
   
     node
-    .classed("node--target", function(n) { return n.target; })
-    .classed("node--source", function(n) { return n.source; });
+    .classed("node--source", function(n) { 
+    	if (d.name == n.name) return true; });
   }
   
   function remove_colours(d) {
