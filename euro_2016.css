@@ -1,4 +1,9 @@
 
+.g {
+  // ..
+  pointer-events: all;
+}
+
 .node {
   font: 300 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
   fill: #bbb;
@@ -12,7 +17,13 @@
   stroke: steelblue;
   stroke-opacity: .4;
   fill: none;
-  pointer-events: none;
+}
+
+
+.link2 {
+  stroke: red;
+  stroke-opacity: .4;
+  fill: none;
 }
 
 .node:hover,

@@ -1,6 +1,8 @@
 var diameter = 600;
 var radius = diameter / 2;
 var margin = 80;
+var result = 200;
+var result_y = result + diameter
 
 
 function addTooltip(circle) {
@@ -34,7 +36,7 @@ function addTooltip(circle) {
 d3.select("body").select("#circle")
 .append("svg")
 .attr("width", diameter)
-.attr("height", diameter);
+.attr("height", diameter + 200);
 
   // draw border around svg image
   // svg.append("rect")
@@ -53,8 +55,8 @@ d3.select("svg")
 //     .attr("class", "outline")
 //     .attr("r", radius - margin);
 
-var link = d3.select("#plot").selectAll(".link"),
-node = d3.select("#plot").selectAll(".node");
+var node = d3.select("#plot").selectAll(".node"),
+ link = d3.select("#plot").selectAll(".link");
 
 
 function draw (data) {
@@ -72,34 +74,35 @@ function draw (data) {
       .text(function(d) { return d.name })
       .style("text-anchor", function(d) { return d.x > 0 ? "start" : "end"; })
       .text(function(d) { return d.name; })
-    .on("mouseover", mouseover)
-    .on("mouseout", mouseout)
-    .on("click", mouse_clicked)
+    .on("mouseover", node_mouseover)
+    .on("mouseout", node_mouseout)
+    .on("click", node_mouseclicked)
     
 
-  link = link.data(links)
+  link = link
+  	.data(links)
     .enter()
     .append("path")
-    .attr("class", "link")
-    .attr("d", function(d){
-      var lineData = [
-      {
-        x: Math.round(d.target.x),
-        y: Math.round(d.target.y)
-      }, {
-        x: Math.round(d.target.x) - Math.round(d.target.x)/3,
-        y: Math.round(d.target.y) - Math.round(d.target.y)/3
-      }, 
-      {
-        x: Math.round(d.source.x) - Math.round(d.source.x)/3,
-        y: Math.round(d.source.y) - Math.round(d.source.y)/3
-      },{
-        x: Math.round(d.source.x),
-        y: Math.round(d.source.y)
-      }];
-      return `M${lineData[0].x},${lineData[0].y}C${lineData[1].x},${lineData[1].y},${lineData[2].x},${lineData[2].y},${lineData[3].x},${lineData[3].y} `;
-    });
-  
+       	.attr("class", "link")
+    	.attr("d", function(d){
+    	  var lineData = [
+    	  {
+    	    x: Math.round(d.target.x),
+    	    y: Math.round(d.target.y)
+    	  }, {
+    	    x: Math.round(d.target.x) - Math.round(d.target.x)/3,
+    	    y: Math.round(d.target.y) - Math.round(d.target.y)/3
+    	  }, 
+    	  {
+    	    x: Math.round(d.source.x) - Math.round(d.source.x)/3,
+    	    y: Math.round(d.source.y) - Math.round(d.source.y)/3
+    	  },{
+    	    x: Math.round(d.source.x),
+    	    y: Math.round(d.source.y)
+    	  }];
+    	  return `M${lineData[0].x},${lineData[0].y}C${lineData[1].x},${lineData[1].y},${lineData[2].x},${lineData[2].y},${lineData[3].x},${lineData[3].y} `;
+    	})
+    .on('mouseover', function(d){link_mouseover(d)})
 
   function circleLayout(nodes) {
 
@@ -155,8 +158,10 @@ function draw (data) {
             name: d.name,
             x: d.x,
             y: d.y,
-            goals: m.result.goalsHomeTeam,
+            ftgoals: m.result.goalsHomeTeam,
             htGoals: m.result.halfTime.goalsHomeTeam,
+            etGoals: m.result.extraTime.goalsHomeTeam,
+            psGoals: m.result.penaltyShootout.goalsAwayTeam,
             link: m._links.homeTeam.href
           };
           awayCoords = findCoords(nodes, m.awayTeamName)
@@ -164,8 +169,10 @@ function draw (data) {
             name: m.awayTeamName,
             x: awayCoords.x,
             y: awayCoords.y,
-            goals: m.result.goalsAwayTeam,
+            ftGoals: m.result.goalsAwayTeam,
             htGoals: m.result.halfTime.goalsAwayTeam,
+            etGoals: m.result.extraTime.goalsAwayTeam,
+            psGoals: m.result.penaltyShootout.goalsAwayTeam,
             link: m._links.awayTeam.href
           };
           match.value = m.result.goalsHomeTeam + m.result.goalsAwayTeam
@@ -185,7 +192,7 @@ function draw (data) {
     }
   }
 
-  function mouse_clicked(d){
+  function node_mouseclicked(d){
   	if (typeof d.active == 'undefined' || d.active == false)
   		{d.active = true;
   		 add_colours(d);}
@@ -195,12 +202,12 @@ function draw (data) {
   		remove_colours(d);}
   }
 
-  function mouseover(d){
+  function node_mouseover(d){
   	if (typeof d.active == 'undefined' || d.active == false)
   		{add_colours(d);}
   }
 
-  function mouseout(d){
+  function node_mouseout(d){
   	if (typeof d.active == 'undefined' || d.active == false)
   		{remove_colours(d);}
   }
@@ -232,12 +239,19 @@ function draw (data) {
     link
     .classed("link--win", false)
     .classed("link--loss", false)
-    .classed("link--draw", false)
-    ;
+    .classed("link--draw", false);
   
     node
     .classed("node--target", false)
-    .classed("node--source", false)
+    .classed("node--source", false);
+  }
+
+  function link_mouseover(d){
+  	d3.select("svg")
+	.append("g")
+	.attr("id", "result")
+	.attr("transform", "translate(0, " + result_y + ")");
+
   }
 
  }
