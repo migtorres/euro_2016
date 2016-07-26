@@ -19,6 +19,18 @@
   fill: none;
 }
 
+.penaltyShootout.link--win,
+.penaltyShootout.link--loss,
+.penaltyShootout.link--draw{
+   stroke-dasharray: 1, 2
+}
+
+.extraTime.link--win,
+.extraTime.link--loss,
+.extraTime.link--draw{
+   stroke-dasharray: 10, 2
+}
+
 
 .link2 {
   stroke: red;

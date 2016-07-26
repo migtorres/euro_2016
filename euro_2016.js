@@ -83,7 +83,7 @@ function draw (data) {
   	.data(links)
     .enter()
     .append("path")
-       	.attr("class", "link")
+        .attr("class", function(l){ return "link " + l.finish; })
     	.attr("d", function(d){
     	  var lineData = [
     	  {
@@ -158,10 +158,8 @@ function draw (data) {
             name: d.name,
             x: d.x,
             y: d.y,
-            ftgoals: m.result.goalsHomeTeam,
-            htGoals: m.result.halfTime.goalsHomeTeam,
-            etGoals: m.result.extraTime.goalsHomeTeam,
-            psGoals: m.result.penaltyShootout.goalsAwayTeam,
+            fullTimeGoals: m.result.goalsHomeTeam,
+            halfTimeGoals: m.result.halfTime.goalsHomeTeam,
             link: m._links.homeTeam.href
           };
           awayCoords = findCoords(nodes, m.awayTeamName)
@@ -169,13 +167,14 @@ function draw (data) {
             name: m.awayTeamName,
             x: awayCoords.x,
             y: awayCoords.y,
-            ftGoals: m.result.goalsAwayTeam,
-            htGoals: m.result.halfTime.goalsAwayTeam,
-            etGoals: m.result.extraTime.goalsAwayTeam,
-            psGoals: m.result.penaltyShootout.goalsAwayTeam,
+            fullTimeGoals: m.result.goalsAwayTeam,
+            halfTimeGoals: m.result.halfTime.goalsAwayTeam,
             link: m._links.awayTeam.href
           };
-          match.value = m.result.goalsHomeTeam + m.result.goalsAwayTeam
+          ['extraTime','penaltyShootout'].forEach(function(finish){
+            if (m.result.hasOwnProperty(finish)) extraResults(match, m, finish)
+          }) 
+          match.finish =(match.hasOwnProperty('finish')) ? match.finish : 'fullTime'         
           match.date = m.date
           links.push(match)
         }
@@ -190,6 +189,14 @@ function draw (data) {
      })[0];
      return {x: country.x, y: country.y}
     }
+  }
+
+  function extraResults(match, m, finish){
+    goals = finish + "Goals"
+    match.source[goals] = m.result[finish].goalsHomeTeam;
+    match.target[goals] = m.result[finish].goalsAwayTeam;
+    match.finish = finish;
+    match.value = m.result[finish].goalsHomeTeam + m.result[finish].goalsAwayTeam;
   }
 
   function node_mouseclicked(d){
@@ -213,23 +220,23 @@ function draw (data) {
   }
 
   function add_colours(d) {
-  
+
     link
-    .classed("link--win", function(l) {
-      if ((l.target.name === d.name && l.target.goals < l.source.goals) || (l.source.name === d.name && l.target.goals > l.source.goals))
-       return true; 
-    })
-    .classed("link--loss", function(l) { 
-      if ((l.target.name === d.name && l.target.goals > l.source.goals) || (l.source.name === d.name && l.target.goals < l.source.goals))
-       return true; 
-    })
-    .classed("link--draw", function(l) { 
-      if (( l.target.name === d.name || l.source.name === d.name ) && l.target.goals == l.source.goals)
-       return true; 
-    })
-    //.filter(function(l) { return l.target.name === d.name || l.source.name === d.name })
-    //.each(function() { this.parentNode.appendChild(this);});
-  
+      .classed("link--win", function(l) {
+        if ((l.target.name === d.name && l.target[l.finish + "Goals"] < l.source[l.finish + "Goals"]) || (l.source.name === d.name && l.target[l.finish + "Goals"] > l.source[l.finish + "Goals"]))
+         return true; 
+      })
+      .classed("link--loss", function(l) { 
+        if ((l.target.name === d.name && l.target[l.finish + "Goals"] > l.source[l.finish + "Goals"]) || (l.source.name === d.name && l.target[l.finish + "Goals"] < l.source[l.finish + "Goals"]))
+         return true; 
+      })
+      .classed("link--draw", function(l) { 
+        if (( l.target.name === d.name || l.source.name === d.name ) && l.target[l.finish + "Goals"] == l.source[l.finish + "Goals"])
+         return true; 
+      })
+      //.filter(function(l) { return l.target.name === d.name || l.source.name === d.name })
+      //.each(function() { this.parentNode.appendChild(this);});
+    
     node
     .classed("node--source", function(n) { 
     	if (d.name == n.name) return true; });
@@ -244,6 +251,22 @@ function draw (data) {
     node
     .classed("node--target", false)
     .classed("node--source", false);
+  }
+
+  function link_classes(d){
+    link
+      .classed("link--win " + d.finish, function(l) {
+        if ((l.target.name === d.name && l.target.fullTimeGoals < l.source[d.finish + "Goals"]) || (l.source.name === d.name && l.target[d.finish + "Goals"] > l.source[d.finish + "Goals"]))
+         return true; 
+      })
+      .classed("link--loss " + d.finish, function(l) { 
+        if ((l.target.name === d.name && l.target.fullTimeGoals > l.source[d.finish + "Goals"]) || (l.source.name === d.name && l.target[d.finish + "Goals"] < l.source[d.finish + "Goals"]))
+         return true; 
+      })
+      .classed("link--draw "  + d.finish, function(l) { 
+        if (( l.target.name === d.name || l.source.name === d.name ) && l.target[d.finish + "Goals"] == l.source[d.finish + "Goals"])
+         return true; 
+      })
   }
 
   function link_mouseover(d){
