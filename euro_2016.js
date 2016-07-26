@@ -1,8 +1,9 @@
 var diameter = 600;
 var radius = diameter / 2;
 var margin = 80;
-var result = 200;
-var result_y = result + diameter
+var legend_h = 200
+var legend_y = diameter
+var legend_x = 6
 
 
 function addTooltip(circle) {
@@ -49,6 +50,11 @@ d3.select("svg")
 .append("g")
 .attr("id", "plot")
 .attr("transform", "translate(" + radius + ", " + radius + ")");
+
+d3.select("svg")
+  .append("g")
+  .attr("id", "legend")
+  .attr("transform", "translate(" + legend_x +", " + legend_y + ")");
 
 // draw border around plot area
 // plot.append("circle")
@@ -103,6 +109,16 @@ function draw (data) {
     	  return `M${lineData[0].x},${lineData[0].y}C${lineData[1].x},${lineData[1].y},${lineData[2].x},${lineData[2].y},${lineData[3].x},${lineData[3].y} `;
     	})
     .on('mouseover', function(d){link_mouseover(d)})
+
+  d3.select("#plot").append("path")
+    .attr("data-legend", "Win")
+    .attr("data-legend-icon", "line")
+    .style("stroke", "#d62728");
+
+  legend = d3.select("#legend")
+    .attr("class","legend")
+    .style("font-size","12px")
+    .call(d3.legend)
 
   function circleLayout(nodes) {
 
@@ -270,10 +286,7 @@ function draw (data) {
   }
 
   function link_mouseover(d){
-  	d3.select("svg")
-	.append("g")
-	.attr("id", "result")
-	.attr("transform", "translate(0, " + result_y + ")");
+  	
 
   }
 
