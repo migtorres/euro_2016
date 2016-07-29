@@ -34,6 +34,13 @@ function addTooltip(circle) {
   }
 }
 
+
+function draw (data) {
+
+d3.select("body").select("#circle")
+.append("h1")
+.text("Euro 2016 results")
+
 d3.select("body").select("#circle")
 .append("svg")
 .attr("width", diameter)
@@ -66,7 +73,6 @@ var node = d3.select("#plot").selectAll(".node"),
  link = d3.select("#plot").selectAll(".link");
 
 
-function draw (data) {
   var nodes = filterTeams(data);
   circleLayout(nodes);
   var links = createLinks(nodes);
