@@ -152,10 +152,10 @@ var node = d3.select("#plot").selectAll(".node"),
       })[0];
 
       if (!team) {
-       team_list.push({name: name, matches: [data]})
+       team_list.push({name: name, matches: [data], opponents: []})
      }
      else {
-       team.matches.push(data)
+     	team.matches.push(data)
      }
    }
 
@@ -163,7 +163,17 @@ var node = d3.select("#plot").selectAll(".node"),
      find(d.homeTeamName, d);
    });
 
-
+   team_list.forEach(function(d) {
+   		data.fixtures.forEach(function(f){
+   			if (d.name == f.awayTeamName){
+   				d.opponents.push(f.homeTeamName)
+   			}
+   			if(d.name == f.homeTeamName){
+   				d.opponents.push(f.awayTeamName)
+   			}
+   		})
+   	})
+   		
    return team_list;
  }
 
