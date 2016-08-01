@@ -82,6 +82,7 @@ var node = d3.select("#plot").selectAll(".node"),
     .enter()
     .append("text")
       .attr("class", "node")
+      .attr("id", function(d) { return d.name.replace(/\s+/g, '-').toLowerCase(); })
       .attr("dx", function(d) { return d.x > 0 ? d.x + 5 : d.x-5 })
       .attr("dy", function(d) { return d.y })
       .text(function(d) { return d.name })
@@ -268,7 +269,13 @@ var node = d3.select("#plot").selectAll(".node"),
     
     node
     .classed("node--source", function(n) { 
-    	if (d.name == n.name) return true; });
+    	if (d.name == n.name) return true; })
+
+    d.opponents.forEach(function(n){
+		d3.select('#' + n.replace(/\s+/g, '-').toLowerCase())
+    	.classed("node--target", true);
+    })
+  
   }
   
   function remove_colours(d) {
