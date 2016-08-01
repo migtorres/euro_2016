@@ -119,7 +119,7 @@ var node = d3.select("#plot").selectAll(".node"),
 
 
   legend.append("image")
-                .attr("xlink:href", "http://localhost:8000/legend.png")
+                .attr("xlink:href", "./legend.png")
                 .attr("width", 250)
  				.attr("height", 60);
 
