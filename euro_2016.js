@@ -15,7 +15,7 @@ d3.select("body").select("#circle")
 
 d3.select("body").select("#circle")
 .append("svg")
-.attr("width", diameter)
+.attr("width", diameter + 150)
 .attr("height", diameter + 150);
 
   // draw border around svg image
@@ -28,7 +28,7 @@ d3.select("body").select("#circle")
 d3.select("svg")
 .append("g")
 .attr("id", "plot")
-.attr("transform", "translate(" + radius + ", " + radius + ")");
+.attr("transform", "translate(" + plot_width + ", " + radius + ")");
 
 var legend = d3.select("svg")
   .append("g")
@@ -92,7 +92,7 @@ var node = d3.select("#plot").selectAll(".node"),
 
 
   legend.append("image")
-                .attr("xlink:href", "http://localhost:8000/legend.png")
+                .attr("xlink:href", "./legend.png")
                 .attr("width", 250)
  				.attr("height", 60);
 
@@ -284,5 +284,5 @@ var node = d3.select("#plot").selectAll(".node"),
 
  }
 
- d3.json("http://localhost:8000/fixtures.json", draw)
+ d3.json("./fixtures.json", draw)
 
