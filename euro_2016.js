@@ -1,38 +1,10 @@
 var diameter = 600;
 var radius = diameter / 2;
 var margin = 60;
+var plot_width = radius + 50
 var legend_h = 200
 var legend_y = diameter
 var legend_x = 6
-
-
-function addTooltip(circle) {
-  var x = parseFloat(circle.attr("cx"));
-  var y = parseFloat(circle.attr("cy"));
-  var r = parseFloat(circle.attr("r"));
-  var text = circle.attr("id");
-
-  var tooltip = d3.select("#plot")
-  .append("text")
-  .text(text)
-  .attr("x", x)
-  .attr("y", y)
-  .attr("dy", -r * 2)
-  .attr("id", "tooltip");
-
-  var offset = tooltip.node().getBBox().width / 2;
-
-  if ((x - offset) < -radius) {
-    tooltip.attr("text-anchor", "start");
-    tooltip.attr("dx", -r);
-  } else if ((x + offset) > (radius)) {
-    tooltip.attr("text-anchor", "end");
-    tooltip.attr("dx", r);
-  } else {
-    tooltip.attr("text-anchor", "middle");
-    tooltip.attr("dx", 0);
-  }
-}
 
 
 function draw (data) {
