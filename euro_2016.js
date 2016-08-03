@@ -5,6 +5,7 @@ var plot_width = radius + 50
 var legend_h = 200
 var legend_y = diameter
 var legend_x = 6
+var result_y = legend_y + 90
 
 
 function draw (data) {
@@ -16,7 +17,7 @@ d3.select("body").select("#circle")
 d3.select("body").select("#circle")
 .append("svg")
 .attr("width", diameter + 150)
-.attr("height", diameter + 150);
+.attr("height", diameter + 450);
 
   // draw border around svg image
   // svg.append("rect")
@@ -35,6 +36,7 @@ var legend = d3.select("svg")
   .attr("id", "legenda")
   .attr("transform", "translate(175, " + legend_y + ")")
   ;
+
 
 // draw border around plot area
 // plot.append("circle")
@@ -89,7 +91,7 @@ var node = d3.select("#plot").selectAll(".node"),
     	  return `M${lineData[0].x},${lineData[0].y}C${lineData[1].x},${lineData[1].y},${lineData[2].x},${lineData[2].y},${lineData[3].x},${lineData[3].y} `;
     	})
     .on('mouseover', function(d){link_mouseover(d)})
-
+    .on('mouseout', link_mouseout)
 
   legend.append("image")
                 .attr("xlink:href", "./legend.png")
@@ -278,8 +280,43 @@ var node = d3.select("#plot").selectAll(".node"),
   }
 
   function link_mouseover(d){
-  	
+  	var result = d3.select("svg")
+  	.append("g")
+  	.attr("id", "result")
+  	.attr("transform", "translate(175, " + result_y + ")")
+  	.attr("height", 200)
+  	.attr("width",300)
 
+  	var homeTeam = d.source.name,
+  	awayTeam = d.target.name,
+  	mainScore = result_creator(homeTeam, awayTeam, d.source.fullTimeGoals, d.target.fullTimeGoals)
+  	halfTimeScore = d.source.halfTimeGoals + " - " + d.target.halfTimeGoals
+
+  	if (d.finish == "extraTime"){
+  		mainScore = result_creator(homeTeam, awayTeam, d.source.extraTimeGoals, d.target.extraTimeGoals, "aet")
+  		
+  	} 
+
+  	if (d.finish == "penaltyShootout") {
+  		mainScore = result_creator(homeTeam, awayTeam, d.source.extraTimeGoals, d.target.extraTimeGoals, "pen")
+  		var penaltyShootoutScore = d.source.penaltyShootoutGoals + " - " + d.target.penaltyShootoutGoals
+  	} 
+
+  	result
+  		.append("text")
+  		.text(mainScore)
+
+  	result.append("p")
+  	.text("HT: " + halfTimeScore)
+  }
+
+  function result_creator(homeTeam, awayTeam, homeGoals, awayGoals, suffix=""){
+  	return homeTeam + " " + homeGoals + "-" + awayGoals + " " + awayTeam + " " + "(" + suffix + ")"
+  }
+
+  function link_mouseout(){
+  	d3.select("#result")
+  	.remove()
   }
 
  }
