@@ -1,41 +1,17 @@
-var diameter = 600;
-var radius = diameter / 2;
-var margin = 60;
-var legend_h = 200
-var legend_y = diameter
-var legend_x = 6
-
-
-function addTooltip(circle) {
-  var x = parseFloat(circle.attr("cx"));
-  var y = parseFloat(circle.attr("cy"));
-  var r = parseFloat(circle.attr("r"));
-  var text = circle.attr("id");
-
-  var tooltip = d3.select("#plot")
-  .append("text")
-  .text(text)
-  .attr("x", x)
-  .attr("y", y)
-  .attr("dy", -r * 2)
-  .attr("id", "tooltip");
-
-  var offset = tooltip.node().getBBox().width / 2;
-
-  if ((x - offset) < -radius) {
-    tooltip.attr("text-anchor", "start");
-    tooltip.attr("dx", -r);
-  } else if ((x + offset) > (radius)) {
-    tooltip.attr("text-anchor", "end");
-    tooltip.attr("dx", r);
-  } else {
-    tooltip.attr("text-anchor", "middle");
-    tooltip.attr("dx", 0);
-  }
-}
+var diameter = 600,
+radius = diameter / 2,
+margin = 60,
+plot_width = radius + 50,
+legend_h = 200,
+legend_y = diameter,
+legend_x = 6,
+result_y = legend_y + 90,
+name_selected = null,
+extra_game = ["extraTime", "penaltyShootout"]
 
 
 function draw (data) {
+
 
 d3.select("body").select("#circle")
 .append("h1")
@@ -43,8 +19,8 @@ d3.select("body").select("#circle")
 
 d3.select("body").select("#circle")
 .append("svg")
-.attr("width", diameter)
-.attr("height", diameter + 150);
+.attr("width", diameter + 150)
+.attr("height", diameter + 450);
 
   // draw border around svg image
   // svg.append("rect")
@@ -56,13 +32,14 @@ d3.select("body").select("#circle")
 d3.select("svg")
 .append("g")
 .attr("id", "plot")
-.attr("transform", "translate(" + radius + ", " + radius + ")");
+.attr("transform", "translate(" + plot_width + ", " + radius + ")");
 
 var legend = d3.select("svg")
   .append("g")
   .attr("id", "legenda")
-  .attr("transform", "translate(175, " + legend_y + ")")
+  .attr("transform", "translate(225, " + legend_y + ")")
   ;
+
 
 // draw border around plot area
 // plot.append("circle")
@@ -75,13 +52,15 @@ var node = d3.select("#plot").selectAll(".node"),
 
   var nodes = filterTeams(data);
   circleLayout(nodes);
-  var links = createLinks(nodes);
+  var links = createLinks(nodes),
+  links_selected = links
 
   node = node
     .data(nodes)
     .enter()
     .append("text")
       .attr("class", "node")
+      .attr("id", function(d) { return d.name.replace(/\s+/g, '-').toLowerCase(); })
       .attr("dx", function(d) { return d.x > 0 ? d.x + 5 : d.x-5 })
       .attr("dy", function(d) { return d.y })
       .text(function(d) { return d.name })
@@ -116,7 +95,7 @@ var node = d3.select("#plot").selectAll(".node"),
     	  return `M${lineData[0].x},${lineData[0].y}C${lineData[1].x},${lineData[1].y},${lineData[2].x},${lineData[2].y},${lineData[3].x},${lineData[3].y} `;
     	})
     .on('mouseover', function(d){link_mouseover(d)})
-
+    .on('mouseout', link_mouseout)
 
   legend.append("image")
                 .attr("xlink:href", "./legend.png")
@@ -200,7 +179,7 @@ var node = d3.select("#plot").selectAll(".node"),
             halfTimeGoals: m.result.halfTime.goalsAwayTeam,
             link: m._links.awayTeam.href
           };
-          ['extraTime','penaltyShootout'].forEach(function(finish){
+          extra_game.forEach(function(finish){
             if (m.result.hasOwnProperty(finish)) extraResults(match, m, finish)
           }) 
           match.finish =(match.hasOwnProperty('finish')) ? match.finish : 'fullTime'         
@@ -229,22 +208,25 @@ var node = d3.select("#plot").selectAll(".node"),
   }
 
   function node_mouseclicked(d){
-  	if (typeof d.active == 'undefined' || d.active == false)
-  		{d.active = true;
-  		 add_colours(d);}
+
+  	if (name_selected){
+  		remove_colours(d);
+  		name_selected = d.name;
+  		add_colours(d);
+  		}
   		
   	else
-  		{d.active = false;
-  		remove_colours(d);}
+  		{name_selected = d.name;
+  		 add_colours(d);}
   }
 
   function node_mouseover(d){
-  	if (typeof d.active == 'undefined' || d.active == false)
+  	if (name_selected == null)
   		{add_colours(d);}
   }
 
   function node_mouseout(d){
-  	if (typeof d.active == 'undefined' || d.active == false)
+  	if (name_selected == null)
   		{remove_colours(d);}
   }
 
@@ -268,7 +250,13 @@ var node = d3.select("#plot").selectAll(".node"),
     
     node
     .classed("node--source", function(n) { 
-    	if (d.name == n.name) return true; });
+    	if (d.name == n.name) return true; })
+
+    d.opponents.forEach(function(n){
+		d3.select('#' + n.replace(/\s+/g, '-').toLowerCase())
+    	.classed("node--target", true);
+    })
+  
   }
   
   function remove_colours(d) {
@@ -299,11 +287,92 @@ var node = d3.select("#plot").selectAll(".node"),
   }
 
   function link_mouseover(d){
+  	if (name_selected == d.source.name || name_selected == d.target.name){
+  		write_results(d)
+  	} else if (name_selected == null){
+  		write_results(d)
+  	}
+
+  }
+
+  function write_results(d){
+  	var result = d3.select("svg")
+  	.append("g")
+  	.attr("id", "result")
+  	.attr("transform", "translate(" + plot_width + ", " + result_y + ")")
+  	.attr("height", 100)
+  	.attr("width",300)
+
+  	var homeTeam = d.source.name,
+  	awayTeam = d.target.name,
+  	mainScore = result_creator(d.source.fullTimeGoals, d.target.fullTimeGoals)
+  	secondaryScore = result_creator(d.source.halfTimeGoals, d.target.halfTimeGoals)
+
+  	if (extra_game.includes(d.finish)) {
+  		mainScore = result_creator(d.source.extraTimeGoals, d.target.extraTimeGoals)
   	
 
+  		if (d.finish == "extraTime"){
+  			secondaryScore = result_creator(d.source.fullTimeGoals, d.target.fullTimeGoals)
+  			write_score(secondaryScore, 20)
+  			result_text("FT:", "end", -35, 20)
+  			var tertiaryScore = result_creator(d.source.halfTimeGoals, d.target.halfTimeGoals)
+  			write_score(tertiaryScore, 40)
+  			result_text("HT:", "end", -35, 40)
+  		} 
+	
+  		if (d.finish == "penaltyShootout") {
+  			secondaryScore = result_creator(d.source.penaltyShootoutGoals, d.target.penaltyShootoutGoals)
+  			write_score(secondaryScore, 20)
+  			result_text("PN:", "end", -35, 20)
+  			var tertiaryScore = result_creator(d.source.fullTimeGoals, d.target.fullTimeGoals)
+  			write_score(tertiaryScore, 40)
+  			result_text("FT:", "end", -35, 40)
+  			var quaternaryScore = result_creator(d.source.halfTimeGoals, d.target.halfTimeGoals)
+  			write_score(quaternaryScore, 60)
+  			result_text("HT:", "end", -35, 60)
+  		}
+
+  	} else {
+  		write_score(secondaryScore, 20)
+  		result_text("HT:", "end", -35, 20)
+  	}
+
+  	result
+  		.append("text")
+  		.text(mainScore)
+  		.style("text-anchor", "middle");
+
+  	result_text(d.source.name, "end", -35, 0)
+  	result_text(d.target.name, "start", 35, 0)
+
+  function result_creator(homeGoals, awayGoals){
+  	return homeGoals + " - " + awayGoals
+  }
+
+  function result_text(text, type, x, y){
+  	result
+  		.append("text")
+  		.text(text)
+  		.style("text-anchor", type)
+  		.attr("transform", "translate(" + x +","+ y +")")
+  }
+
+  function write_score(score, y){
+  	d3.select("#result")
+  	.append("text")
+  	.attr("transform", "translate(0, " + y +")")
+  	.attr("height", 20)
+  	.attr("width",300)
+  	.style("text-anchor", "middle")
+  	.text(score)}
+  }
+
+  function link_mouseout(){
+  	d3.select("#result")
+  	.remove()
   }
 
  }
 
- d3.json("https://migtorres.github.io/euro_2016/fixtures.json", draw)
-
+ d3.json("./fixtures.json", draw)
