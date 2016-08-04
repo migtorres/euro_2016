@@ -21,10 +21,6 @@ text{
   fill: #B0C4DE;
 }
 
-.node:hover {
-  fill: #000;
-}
-
 .node.node--target {
   font-weight: bold;
   fill: #808080;

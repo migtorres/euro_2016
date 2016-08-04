@@ -6,9 +6,11 @@ var legend_h = 200
 var legend_y = diameter
 var legend_x = 6
 var result_y = legend_y + 90
+var name_selected = false
 
 
 function draw (data) {
+
 
 d3.select("body").select("#circle")
 .append("h1")
@@ -34,7 +36,7 @@ d3.select("svg")
 var legend = d3.select("svg")
   .append("g")
   .attr("id", "legenda")
-  .attr("transform", "translate(175, " + legend_y + ")")
+  .attr("transform", "translate(225, " + legend_y + ")")
   ;
 
 
@@ -204,22 +206,23 @@ var node = d3.select("#plot").selectAll(".node"),
   }
 
   function node_mouseclicked(d){
-  	if (typeof d.active == 'undefined' || d.active == false)
-  		{d.active = true;
-  		 add_colours(d);}
+
+  	if (name_selected)
+  		{name_selected = false;
+  		remove_colours(d);}
   		
   	else
-  		{d.active = false;
-  		remove_colours(d);}
+  		{name_selected = true;
+  		 add_colours(d);}
   }
 
   function node_mouseover(d){
-  	if (typeof d.active == 'undefined' || d.active == false)
+  	if (name_selected == false)
   		{add_colours(d);}
   }
 
   function node_mouseout(d){
-  	if (typeof d.active == 'undefined' || d.active == false)
+  	if (name_selected == false)
   		{remove_colours(d);}
   }
 
@@ -283,35 +286,66 @@ var node = d3.select("#plot").selectAll(".node"),
   	var result = d3.select("svg")
   	.append("g")
   	.attr("id", "result")
-  	.attr("transform", "translate(175, " + result_y + ")")
-  	.attr("height", 200)
+  	.attr("transform", "translate(" + plot_width + ", " + result_y + ")")
+  	.attr("height", 100)
   	.attr("width",300)
 
   	var homeTeam = d.source.name,
   	awayTeam = d.target.name,
   	mainScore = result_creator(homeTeam, awayTeam, d.source.fullTimeGoals, d.target.fullTimeGoals)
   	halfTimeScore = d.source.halfTimeGoals + " - " + d.target.halfTimeGoals
+  	var secondaryScore = "HT: " + halfTimeScore
 
   	if (d.finish == "extraTime"){
-  		mainScore = result_creator(homeTeam, awayTeam, d.source.extraTimeGoals, d.target.extraTimeGoals, "aet")
+  		mainScore = result_creator(homeTeam, awayTeam, d.source.extraTimeGoals, d.target.extraTimeGoals, "(aet)")
+  		secondaryScore = "FT: " + d.source.fullTimeGoals + " - " + d.target.fullTimeGoals
+  		var tertiaryScore = "HT: " + halfTimeScore
   		
   	} 
 
   	if (d.finish == "penaltyShootout") {
-  		mainScore = result_creator(homeTeam, awayTeam, d.source.extraTimeGoals, d.target.extraTimeGoals, "pen")
-  		var penaltyShootoutScore = d.source.penaltyShootoutGoals + " - " + d.target.penaltyShootoutGoals
-  	} 
+  		mainScore = result_creator(homeTeam, awayTeam, d.source.extraTimeGoals, d.target.extraTimeGoals, "(pen)")
+  		secondaryScore = "PEN: " + d.source.penaltyShootoutGoals + " - " + d.target.penaltyShootoutGoals
+  		var tertiaryScore = "FT: " + d.source.fullTimeGoals + " - " + d.target.fullTimeGoals
+  		var quaternaryScore = "HT: " + halfTimeScore
+  	}
+
+  	
 
   	result
   		.append("text")
   		.text(mainScore)
+  		.style("text-anchor", "middle")
 
-  	result.append("p")
-  	.text("HT: " + halfTimeScore)
+  	d3.select("#result")
+  	.append("text")
+  	.attr("transform", "translate(0,20)")
+  	.attr("height", 20)
+  	.attr("width",300)
+  	.style("text-anchor", "middle")
+  	.text(secondaryScore)
+
+  	if (typeof tertiaryScore !== 'undefined'){
+  	d3.select("#result")
+  	.append("text")
+  	.attr("transform", "translate(0,40)")
+  	.attr("height", 20)
+  	.attr("width",300)
+  	.style("text-anchor", "middle")
+  	.text(tertiaryScore)}
+
+  	if (typeof quaternaryScore !== 'undefined'){
+  	d3.select("#result")
+  	.append("text")
+  	.attr("transform", "translate(0,60)")
+  	.attr("height", 20)
+  	.attr("width",300)
+  	.style("text-anchor", "middle")
+  	.text(quaternaryScore)}
   }
 
   function result_creator(homeTeam, awayTeam, homeGoals, awayGoals, suffix=""){
-  	return homeTeam + " " + homeGoals + "-" + awayGoals + " " + awayTeam + " " + "(" + suffix + ")"
+  	return homeTeam + " " + homeGoals + " - " + awayGoals + " " + awayTeam + " " + suffix
   }
 
   function link_mouseout(){
