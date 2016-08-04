@@ -1,12 +1,13 @@
-var diameter = 600;
-var radius = diameter / 2;
-var margin = 60;
-var plot_width = radius + 50
-var legend_h = 200
-var legend_y = diameter
-var legend_x = 6
-var result_y = legend_y + 90
-var name_selected = false
+var diameter = 600,
+radius = diameter / 2,
+margin = 60,
+plot_width = radius + 50,
+legend_h = 200,
+legend_y = diameter,
+legend_x = 6,
+result_y = legend_y + 90,
+name_selected = null,
+extra_game = ["extraTime", "penaltyShootout"]
 
 
 function draw (data) {
@@ -51,7 +52,8 @@ var node = d3.select("#plot").selectAll(".node"),
 
   var nodes = filterTeams(data);
   circleLayout(nodes);
-  var links = createLinks(nodes);
+  var links = createLinks(nodes),
+  links_selected = links
 
   node = node
     .data(nodes)
@@ -177,7 +179,7 @@ var node = d3.select("#plot").selectAll(".node"),
             halfTimeGoals: m.result.halfTime.goalsAwayTeam,
             link: m._links.awayTeam.href
           };
-          ['extraTime','penaltyShootout'].forEach(function(finish){
+          extra_game.forEach(function(finish){
             if (m.result.hasOwnProperty(finish)) extraResults(match, m, finish)
           }) 
           match.finish =(match.hasOwnProperty('finish')) ? match.finish : 'fullTime'         
@@ -207,22 +209,24 @@ var node = d3.select("#plot").selectAll(".node"),
 
   function node_mouseclicked(d){
 
-  	if (name_selected)
-  		{name_selected = false;
-  		remove_colours(d);}
+  	if (name_selected){
+  		remove_colours(d);
+  		name_selected = d.name;
+  		add_colours(d);
+  		}
   		
   	else
-  		{name_selected = true;
+  		{name_selected = d.name;
   		 add_colours(d);}
   }
 
   function node_mouseover(d){
-  	if (name_selected == false)
+  	if (name_selected == null)
   		{add_colours(d);}
   }
 
   function node_mouseout(d){
-  	if (name_selected == false)
+  	if (name_selected == null)
   		{remove_colours(d);}
   }
 
@@ -283,6 +287,15 @@ var node = d3.select("#plot").selectAll(".node"),
   }
 
   function link_mouseover(d){
+  	if (name_selected == d.source.name || name_selected == d.target.name){
+  		write_results(d)
+  	} else if (name_selected == null){
+  		write_results(d)
+  	}
+
+  }
+
+  function write_results(d){
   	var result = d3.select("svg")
   	.append("g")
   	.attr("id", "result")
@@ -292,60 +305,67 @@ var node = d3.select("#plot").selectAll(".node"),
 
   	var homeTeam = d.source.name,
   	awayTeam = d.target.name,
-  	mainScore = result_creator(homeTeam, awayTeam, d.source.fullTimeGoals, d.target.fullTimeGoals)
-  	halfTimeScore = d.source.halfTimeGoals + " - " + d.target.halfTimeGoals
-  	var secondaryScore = "HT: " + halfTimeScore
+  	mainScore = result_creator(d.source.fullTimeGoals, d.target.fullTimeGoals)
+  	secondaryScore = result_creator(d.source.halfTimeGoals, d.target.halfTimeGoals)
 
-  	if (d.finish == "extraTime"){
-  		mainScore = result_creator(homeTeam, awayTeam, d.source.extraTimeGoals, d.target.extraTimeGoals, "(aet)")
-  		secondaryScore = "FT: " + d.source.fullTimeGoals + " - " + d.target.fullTimeGoals
-  		var tertiaryScore = "HT: " + halfTimeScore
-  		
-  	} 
-
-  	if (d.finish == "penaltyShootout") {
-  		mainScore = result_creator(homeTeam, awayTeam, d.source.extraTimeGoals, d.target.extraTimeGoals, "(pen)")
-  		secondaryScore = "PEN: " + d.source.penaltyShootoutGoals + " - " + d.target.penaltyShootoutGoals
-  		var tertiaryScore = "FT: " + d.source.fullTimeGoals + " - " + d.target.fullTimeGoals
-  		var quaternaryScore = "HT: " + halfTimeScore
-  	}
-
+  	if (extra_game.includes(d.finish)) {
+  		mainScore = result_creator(d.source.extraTimeGoals, d.target.extraTimeGoals)
   	
+
+  		if (d.finish == "extraTime"){
+  			secondaryScore = result_creator(d.source.fullTimeGoals, d.target.fullTimeGoals)
+  			write_score(secondaryScore, 20)
+  			result_text("FT:", "end", -35, 20)
+  			var tertiaryScore = result_creator(d.source.halfTimeGoals, d.target.halfTimeGoals)
+  			write_score(tertiaryScore, 40)
+  			result_text("HT:", "end", -35, 40)
+  		} 
+	
+  		if (d.finish == "penaltyShootout") {
+  			secondaryScore = result_creator(d.source.penaltyShootoutGoals, d.target.penaltyShootoutGoals)
+  			write_score(secondaryScore, 20)
+  			result_text("PN:", "end", -35, 20)
+  			var tertiaryScore = result_creator(d.source.fullTimeGoals, d.target.fullTimeGoals)
+  			write_score(tertiaryScore, 40)
+  			result_text("FT:", "end", -35, 40)
+  			var quaternaryScore = result_creator(d.source.halfTimeGoals, d.target.halfTimeGoals)
+  			write_score(quaternaryScore, 60)
+  			result_text("HT:", "end", -35, 60)
+  		}
+
+  	} else {
+  		write_score(secondaryScore, 20)
+  		result_text("HT:", "end", -35, 20)
+  	}
 
   	result
   		.append("text")
   		.text(mainScore)
-  		.style("text-anchor", "middle")
+  		.style("text-anchor", "middle");
 
-  	d3.select("#result")
-  	.append("text")
-  	.attr("transform", "translate(0,20)")
-  	.attr("height", 20)
-  	.attr("width",300)
-  	.style("text-anchor", "middle")
-  	.text(secondaryScore)
+  	result_text(d.source.name, "end", -35, 0)
+  	result_text(d.target.name, "start", 35, 0)
 
-  	if (typeof tertiaryScore !== 'undefined'){
-  	d3.select("#result")
-  	.append("text")
-  	.attr("transform", "translate(0,40)")
-  	.attr("height", 20)
-  	.attr("width",300)
-  	.style("text-anchor", "middle")
-  	.text(tertiaryScore)}
-
-  	if (typeof quaternaryScore !== 'undefined'){
-  	d3.select("#result")
-  	.append("text")
-  	.attr("transform", "translate(0,60)")
-  	.attr("height", 20)
-  	.attr("width",300)
-  	.style("text-anchor", "middle")
-  	.text(quaternaryScore)}
+  function result_creator(homeGoals, awayGoals){
+  	return homeGoals + " - " + awayGoals
   }
 
-  function result_creator(homeTeam, awayTeam, homeGoals, awayGoals, suffix=""){
-  	return homeTeam + " " + homeGoals + " - " + awayGoals + " " + awayTeam + " " + suffix
+  function result_text(text, type, x, y){
+  	result
+  		.append("text")
+  		.text(text)
+  		.style("text-anchor", type)
+  		.attr("transform", "translate(" + x +","+ y +")")
+  }
+
+  function write_score(score, y){
+  	d3.select("#result")
+  	.append("text")
+  	.attr("transform", "translate(0, " + y +")")
+  	.attr("height", 20)
+  	.attr("width",300)
+  	.style("text-anchor", "middle")
+  	.text(score)}
   }
 
   function link_mouseout(){

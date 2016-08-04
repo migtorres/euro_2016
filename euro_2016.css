@@ -26,9 +26,15 @@ text{
   fill: #808080;
 }
 
+.transparent{
+  stroke-opacity: 2
+  stroke-width: 2px;
+}
+
 .link {
   stroke: steelblue;
   stroke-opacity: .4;
+  stroke-width: 1px;
   fill: none;
 }
 
