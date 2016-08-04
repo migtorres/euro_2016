@@ -7,23 +7,34 @@ h1 {
   line-height: 26.4px;
 }
 
+text{
+  font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+}
+
 .g {
   // ..
   pointer-events: all;
 }
 
 .node {
-  font: 300 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
-  fill: #bbb;
+  font: 300 11px "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+  fill: #B0C4DE;
 }
 
-.node:hover {
-  fill: #000;
+.node.node--target {
+  font-weight: bold;
+  fill: #808080;
+}
+
+.transparent{
+  stroke-opacity: 2
+  stroke-width: 2px;
 }
 
 .link {
   stroke: steelblue;
   stroke-opacity: .4;
+  stroke-width: 1px;
   fill: none;
 }
 
