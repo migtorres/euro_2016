@@ -13,6 +13,11 @@ extra_game = ["extraTime", "penaltyShootout"]
 function draw (data) {
 
 	d3.select("body").select("#circle")
+	.append("h6")
+	.html("build by Miguel Torres | <a href='http://twitter.com/migtorres'>twitter</a> | <a href='http://github.com/migtorres'>github</a>")
+	.style("text-anchor", "end")
+
+	d3.select("body").select("#circle")
 	.append("h1")
 	.text("Euro 2016 results")
 
