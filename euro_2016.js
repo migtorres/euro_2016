@@ -18,17 +18,14 @@ d3.select("body").select("#circle")
 .text("Euro 2016 results")
 
 d3.select("body").select("#circle")
+.append("h2")
+.text("Winner: Portugal")
+
+d3.select("body").select("#circle")
 .append("svg")
 .attr("width", diameter + 150)
 .attr("height", diameter + 450);
 
-  // draw border around svg image
-  // svg.append("rect")
-  //     .attr("class", "outline")
-  //     .attr("width", diameter)
-  //     .attr("height", diameter);
-
-  // create plot area within svg image
 d3.select("svg")
 .append("g")
 .attr("id", "plot")
@@ -37,8 +34,7 @@ d3.select("svg")
 var legend = d3.select("svg")
   .append("g")
   .attr("id", "legenda")
-  .attr("transform", "translate(225, " + legend_y + ")")
-  ;
+  .attr("transform", "translate(225, " + legend_y + ")");
 
 
 // draw border around plot area
@@ -47,7 +43,9 @@ var legend = d3.select("svg")
 //     .attr("r", radius - margin);
 
 var node = d3.select("#plot").selectAll(".node"),
+link2 = d3.select("#plot").selectAll(".transplink"),
  link = d3.select("#plot").selectAll(".link");
+ 
 
 
   var nodes = filterTeams(data);
@@ -70,7 +68,6 @@ var node = d3.select("#plot").selectAll(".node"),
     .on("mouseout", node_mouseout)
     .on("click", node_mouseclicked)
     
-
   link = link
   	.data(links)
     .enter()
@@ -94,8 +91,34 @@ var node = d3.select("#plot").selectAll(".node"),
     	  }];
     	  return `M${lineData[0].x},${lineData[0].y}C${lineData[1].x},${lineData[1].y},${lineData[2].x},${lineData[2].y},${lineData[3].x},${lineData[3].y} `;
     	})
-    .on('mouseover', function(d){link_mouseover(d)})
-    .on('mouseout', link_mouseout)
+
+     link2 = link2
+  	.data(links)
+    .enter()
+    .append("path")
+        .attr("class", function(l){ return "transplink " + l.finish; })
+    	.attr("d", function(d){
+    	  var lineData = [
+    	  {
+    	    x: Math.round(d.target.x),
+    	    y: Math.round(d.target.y)
+    	  }, {
+    	    x: Math.round(d.target.x) - Math.round(d.target.x)/3,
+    	    y: Math.round(d.target.y) - Math.round(d.target.y)/3
+    	  }, 
+    	  {
+    	    x: Math.round(d.source.x) - Math.round(d.source.x)/3,
+    	    y: Math.round(d.source.y) - Math.round(d.source.y)/3
+    	  },{
+    	    x: Math.round(d.source.x),
+    	    y: Math.round(d.source.y)
+    	  }];
+    	  return `M${lineData[0].x},${lineData[0].y}C${lineData[1].x},${lineData[1].y},${lineData[2].x},${lineData[2].y},${lineData[3].x},${lineData[3].y} `;
+    	})
+    	.on('mouseover', function(d){link_mouseover(d)})
+    	.on('mouseout', link_mouseout);
+    
+
 
   legend.append("image")
                 .attr("xlink:href", "./legend.png")
@@ -303,6 +326,12 @@ var node = d3.select("#plot").selectAll(".node"),
   	.attr("height", 100)
   	.attr("width",300)
 
+  	result
+  		.append("text")
+  		.text(d.date.substr(0,10))
+  		.attr("class", "date")
+  		.style("text-anchor", "middle");
+
   	var homeTeam = d.source.name,
   	awayTeam = d.target.name,
   	mainScore = result_creator(d.source.fullTimeGoals, d.target.fullTimeGoals)
@@ -311,40 +340,43 @@ var node = d3.select("#plot").selectAll(".node"),
   	if (extra_game.includes(d.finish)) {
   		mainScore = result_creator(d.source.extraTimeGoals, d.target.extraTimeGoals)
   	
+  		// Need to improve this
 
   		if (d.finish == "extraTime"){
   			secondaryScore = result_creator(d.source.fullTimeGoals, d.target.fullTimeGoals)
-  			write_score(secondaryScore, 20)
-  			result_text("FT:", "end", -35, 20)
+  			write_score(secondaryScore, 40)
+  			result_text("FT:", "end", -35, 40)
   			var tertiaryScore = result_creator(d.source.halfTimeGoals, d.target.halfTimeGoals)
   			write_score(tertiaryScore, 40)
-  			result_text("HT:", "end", -35, 40)
+  			result_text("HT:", "end", -35, 60)
   		} 
 	
   		if (d.finish == "penaltyShootout") {
   			secondaryScore = result_creator(d.source.penaltyShootoutGoals, d.target.penaltyShootoutGoals)
   			write_score(secondaryScore, 20)
-  			result_text("PN:", "end", -35, 20)
+  			result_text("PN:", "end", -35, 40)
   			var tertiaryScore = result_creator(d.source.fullTimeGoals, d.target.fullTimeGoals)
   			write_score(tertiaryScore, 40)
-  			result_text("FT:", "end", -35, 40)
+  			result_text("FT:", "end", -35, 60)
   			var quaternaryScore = result_creator(d.source.halfTimeGoals, d.target.halfTimeGoals)
   			write_score(quaternaryScore, 60)
-  			result_text("HT:", "end", -35, 60)
+  			result_text("HT:", "end", -35, 80)
   		}
 
   	} else {
-  		write_score(secondaryScore, 20)
-  		result_text("HT:", "end", -35, 20)
+  		write_score(secondaryScore, 40)
+  		result_text("HT:", "end", -35, 40)
   	}
 
   	result
   		.append("text")
   		.text(mainScore)
-  		.style("text-anchor", "middle");
+  		.attr("class", "mainresult")
+  		.style("text-anchor", "middle")
+  		.attr("transform", "translate(0, 20)");
 
-  	result_text(d.source.name, "end", -35, 0)
-  	result_text(d.target.name, "start", 35, 0)
+  	result_text(d.source.name, "end", -35, 20)
+  	result_text(d.target.name, "start", 35, 20)
 
   function result_creator(homeGoals, awayGoals){
   	return homeGoals + " - " + awayGoals
@@ -354,6 +386,7 @@ var node = d3.select("#plot").selectAll(".node"),
   	result
   		.append("text")
   		.text(text)
+  		.attr("class", "subresult")
   		.style("text-anchor", type)
   		.attr("transform", "translate(" + x +","+ y +")")
   }
@@ -361,6 +394,7 @@ var node = d3.select("#plot").selectAll(".node"),
   function write_score(score, y){
   	d3.select("#result")
   	.append("text")
+  	.attr("class", "subresult")
   	.attr("transform", "translate(0, " + y +")")
   	.attr("height", 20)
   	.attr("width",300)

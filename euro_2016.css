@@ -7,8 +7,32 @@ h1 {
   line-height: 26.4px;
 }
 
+h2 {
+  font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+  font-size: 18px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 500;
+  line-height: 26.4px;
+}
+
 text{
   font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+}
+
+.mainresult{
+  font-size: 18px;
+  font-style: bold;
+}
+
+.subresult{
+  font-size: 12px;
+  font-style: normal;
+}
+
+.subresult{
+  font-size: 14px;
+  font-style: normal;
 }
 
 .g {
@@ -27,14 +51,22 @@ text{
 }
 
 .transparent{
-  stroke-opacity: 2
-  stroke-width: 2px;
+  stroke: red;
+  stroke-opacity: 2;
+  stroke-width: 3px;
 }
 
 .link {
   stroke: steelblue;
   stroke-opacity: .4;
   stroke-width: 1px;
+  fill: none;
+}
+
+.transplink {
+  stroke: red;
+  stroke-opacity: 0;
+  stroke-width: 6px;
   fill: none;
 }
 
